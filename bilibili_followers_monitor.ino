@@ -1,38 +1,10 @@
-/**********************************************************************
- * 项目：bilibili粉丝数监视器
- * 硬件：适用于NodeMCU ESP8266 + MAX7219
- * 功能：连接WiFi后获取指定用户的哔哩哔哩实时粉丝数并在8位数码管上居中显示
- * 作者：flyAkari 会飞的阿卡林 bilibili UID:751219
- * 源作者：HiGeek工作室 BiliBili UID:4893237
- * 日期：2018/09/18
- **********************************************************************/
-/*2018/12/18 V1.1 更新说明：
-  上电后数码管显示初始化为"--------", 直到获取到粉丝数.
-  可从串口监视器输入数字测试显示连接是否正常, 波特率选择119200.*/
-
-/*
-  2019/4/6 V1.2 更新说明“
-  原作者HiGeek来维护了当时瞎鸡儿乱写的代码，逻辑错乱，功能死板。居然还有while(1)的傻吊操作。
-  在今天刷BiliBili的时候无意中发现自己当初瞎吉儿乱写的代码居然在流通，顿时感觉脸红耳赤，非常丢人。于是乎fork下来，重新维护位于2018/8/23写的粪代码。
-
-  ***加了ERRORCODE显示，如果出现错误会在数码管上显示错误代码
-  Error--1 UID（用户ID）填写错误
-  Error--2 API无法连接，请检查当前使用的无线网能否正常浏览BiliBili。或者有可能是API地址更新。
-
-  ***加了开机简单的自建，用于检查数码管是否有坏块。
-
-  ***加了WiFi连接过程的动画
-
-  ***加了WiFi断线重连
-*/
-
- //硬件连接说明：
- //MAX7219 --- ESP8266
- //  VCC   --- 3V(3.3V)
- //  GND   --- G (GND)
- //  DIN   --- D7(GPIO13)
- //  CS    --- D1(GPIO5)
- //  CLK   --- D5(GPIO14)
+//硬件连接说明：
+//MAX7219 --- ESP8266
+//  VCC   --- 3V(3.3V)
+//  GND   --- G (GND)
+//  DIN   --- D7(GPIO13)
+//  CS    --- D1(GPIO5)
+//  CLK   --- D5(GPIO14)
 #include <FS.h>
 #include <SPI.h>
 #include <EEPROM.h>
@@ -44,13 +16,8 @@
 #define CS_PIN 5  //D1
 #define KEY_PIN 4 //D2
 
-//---------------修改此处""内的信息--------------------
-// String ssid     = "HiGeek1";  //WiFi名
-// String password = "789456123";  //WiFi密码
-// String biliuid  = "4893237";  //bilibili UID 用户ID
 String AP_SSID  = "BiliBili monitor";
 String AP_PWD   = "HiGeek Studio";
-//----------------------------------------------------
 
 DynamicJsonDocument jsonBuffer(400);
 WiFiClient client;
@@ -86,12 +53,10 @@ void setup()
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
   WiFi.softAP(AP_SSID, AP_PWD, 6, 0, 1);
   WiFi.begin(ssid, password);
-  // connectWiFi();
 
   webServer.on("/", handleRoot);
   webServer.on("/setup", HTTP_POST, handleUpdate);
   webServer.begin();
-  Serial.println("DEBUG1");
 }
 
 void loop()
@@ -177,7 +142,6 @@ void handleRoot()
   httpBuff.replace("{{passwd}}", password);
   httpBuff.replace("{{uid}}", biliuid);
   webServer.send(200, "text/html", httpBuff);
-  Serial.println("DEBUG2");
 }
 
 void handleUpdate()
@@ -197,7 +161,6 @@ void handleUpdate()
     eepromWriteStr(0x40, arg_uid);
     webServer.send(200, "text/plain", "设置成功");
   }
-  Serial.println("DEBUG3");
 }
 /* *
  * 显示ERROR CODE
