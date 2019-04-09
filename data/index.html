@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Setting</title>
+    </head>
+    <body>
+        <h1>粉丝数监视器设置</h1>
+        <form method="POST" action="/setup">
+            WiFi名称:<br>
+            <input type="text" name="ssid">
+            <br>
+            WiFi密码:<br>
+            <input type="text" name="passwd">
+            <br>
+            B站ID:<br>
+            <input type="number" name="uid">
+            <br><br>
+            <input type="submit" value="提交">
+        </form> 
+    </body>
+    当前设置：<br>
+    WiFi名称：{{ssid}} <br>
+    WiFi密码：{{passwd}} <br>
+    B站ID：{{uid}} <br>
+</html>
