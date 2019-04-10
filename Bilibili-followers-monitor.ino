@@ -62,8 +62,9 @@ void setup()
 
 void loop()
 {
-  connectWiFi();
+  webServer.handleClient();
   if (WiFi.status() == WL_CONNECTED) {
+    sendCommand(9, 0xff);
     HTTPClient http;
     http.begin("http://api.bilibili.com/x/relation/stat?vmid=" + biliuid);
     int httpCode = http.GET();
@@ -95,12 +96,7 @@ void loop()
       errorCode(2); //API无法连接，请检查网络是否通常。或者有可能是API地址更新。
       while(1);
     }
-  }
-}
-
-void connectWiFi(){
-  webServer.handleClient();
-  while(WiFi.status() != WL_CONNECTED) {
+  } else {
     sendCommand(9, 0x00);
     for(int i = 2; i < 0x80; i = i << 1) {
       for(int x = 1; x < 9; x++) {
@@ -109,8 +105,21 @@ void connectWiFi(){
       delay(100);
     }
   }
-  sendCommand(9, 0xff);
 }
+
+// void connectWiFi(){
+//   webServer.handleClient();
+//   while(WiFi.status() != WL_CONNECTED) {
+//     sendCommand(9, 0x00);
+//     for(int i = 2; i < 0x80; i = i << 1) {
+//       for(int x = 1; x < 9; x++) {
+//         sendCommand(x, i);
+//       }
+//       delay(100);
+//     }
+//   }
+//   sendCommand(9, 0xff);
+// }
 
 void sendCommand(int command, int value) {
   digitalWrite(CS_PIN, LOW);
