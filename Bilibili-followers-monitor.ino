@@ -17,7 +17,7 @@
 #define KEY_PIN 4 //D2
 
 String AP_SSID  = "BiliBili monitor";
-String AP_PWD   = "HiGeek Studio";
+String AP_PWD   = "HiGeekStudio";
 
 DynamicJsonDocument jsonBuffer(400);
 WiFiClient client;
@@ -51,11 +51,12 @@ void setup()
 
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(AP_SSID, AP_PWD, 6, 0, 1);
+  WiFi.softAP(AP_SSID, AP_PWD);
   WiFi.begin(ssid, password);
 
   webServer.on("/", handleRoot);
   webServer.on("/setup", HTTP_POST, handleUpdate);
+  webServer.on("/status",handleStatus);
   webServer.begin();
 }
 
@@ -98,9 +99,9 @@ void loop()
 }
 
 void connectWiFi(){
+  webServer.handleClient();
   while(WiFi.status() != WL_CONNECTED) {
     sendCommand(9, 0x00);
-    webServer.handleClient();
     for(int i = 2; i < 0x80; i = i << 1) {
       for(int x = 1; x < 9; x++) {
         sendCommand(x, i);
@@ -138,28 +139,37 @@ void handleRoot()
   File f = SPIFFS.open("/index.html", "r");
   String httpBuff = f.readString();
   f.close();
-  httpBuff.replace("{{ssid}}", ssid);
-  httpBuff.replace("{{passwd}}", password);
-  httpBuff.replace("{{uid}}", biliuid);
   webServer.send(200, "text/html", httpBuff);
+}
+
+void handleStatus(){
+    Serial.println("[Debug]->Web访问: /status");
+    String httpBuff;//建立http缓存
+    httpBuff += ssid;
+    httpBuff += ";";
+    httpBuff += password;
+    httpBuff += ";";
+    httpBuff += biliuid;
+    webServer.send(200, "text/html", httpBuff);
 }
 
 void handleUpdate()
 {
+    Serial.println("[Debug]->Web提交: /post");//只是Debug
   String arg_ssid = webServer.arg("ssid");
   String arg_passwd = webServer.arg("passwd");
   String arg_uid = webServer.arg("uid");
   Serial.println(arg_ssid + " " + arg_passwd + " " + arg_uid);
   if (arg_ssid == "" || arg_passwd == "" || arg_uid == "")
   {
-    webServer.send(400, "text/plain", "输入参数不完整");
+    webServer.send(400, "text/plain", "Incomplete");//不成功，缺少参数
   }
   else
   {
     eepromWriteStr(0x00, arg_ssid);
     eepromWriteStr(0x20, arg_passwd);
     eepromWriteStr(0x40, arg_uid);
-    webServer.send(200, "text/plain", "设置成功");
+    webServer.send(200, "text/plain", "OK");//成功
   }
 }
 /* *
